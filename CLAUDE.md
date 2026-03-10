@@ -18,6 +18,9 @@ dotnet test
 # Run a single test class
 dotnet test --filter "ClassName=WindowDetectorTests"
 
+# Run a single test method
+dotnet test --filter "FullyQualifiedName~OnClipboardChanged_Rdp_PastesText"
+
 # Run application
 dotnet run --project src/VoiceSync
 
@@ -45,7 +48,7 @@ ClipboardWatcher → SyncEngine → InputSender
 
 ## Testing Approach
 
-Tests live in `tests/VoiceSync.Tests/` using xUnit + Moq. `WindowDetector.Classify` is tested via `[Theory]` inline data. `SyncEngine` tests mock `WindowDetector` to control `Detect()` return values without Win32 calls.
+Tests live in `tests/VoiceSync.Tests/` using xUnit + Moq. `WindowDetector.Classify` is tested via `[Theory]` inline data. `SyncEngine` tests mock `WindowDetector` to control `Detect()` return values without Win32 calls. Set `RdpDelayMs = 0` / `SunflowerDelayMs = 0` in tests to avoid `Task.Delay`.
 
 ## Key Constraints
 
@@ -53,3 +56,11 @@ Tests live in `tests/VoiceSync.Tests/` using xUnit + Moq. `WindowDetector.Classi
 - Published as a self-contained single `.exe` (no .NET runtime required on target machine).
 - `AllowUnsafeBlocks` is disabled — P/Invoke structs use `[StructLayout]` with marshaling, not raw pointers.
 - The paste delay re-check (second `detector.Detect()` call after the delay) is intentional — prevents pasting if the user switched away from the remote window during the delay period.
+
+## C# Conventions
+
+- File-scope namespaces (`namespace VoiceSync;`) with a path comment on line 1: `// src/VoiceSync/ClassName.cs`
+- Primary constructors for DI: `class SyncEngine(WindowDetector detector, Action<string> pasteAction)`
+- Private fields: `_camelCase`. Properties/methods/types: `PascalCase`.
+- Prefer `StringComparison.OrdinalIgnoreCase` over `.ToLower()` comparisons.
+- All P/Invoke declarations go in `NativeMethods`; close handles in `finally` blocks.
