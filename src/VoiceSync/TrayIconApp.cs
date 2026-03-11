@@ -27,7 +27,7 @@ internal sealed class TrayIconApp : ApplicationContext
         _tray = new NotifyIcon
         {
             Text = "VoiceSync — 语音远程同步",
-            Icon = SystemIcons.Application,
+            Icon = LoadTrayIcon(),
             Visible = true,
             ContextMenuStrip = BuildMenu()
         };
@@ -63,11 +63,18 @@ internal sealed class TrayIconApp : ApplicationContext
         return menu;
     }
 
+    private static Icon LoadTrayIcon()
+    {
+        var asm = typeof(TrayIconApp).Assembly;
+        using var stream = asm.GetManifestResourceStream("VoiceSync.tray.ico");
+        return stream is not null ? new Icon(stream) : SystemIcons.Application;
+    }
+
     private void UpdateTrayIcon()
     {
         _tray.Text = _engine.IsEnabled
-            ? "VoiceSync - 运行中"
-            : "VoiceSync - 已暂停";
+            ? "VoiceSync ● 运行中"
+            : "VoiceSync ○ 已暂停";
     }
 
     private async void OnClipboardChanged(object? sender, EventArgs e)

@@ -59,5 +59,5 @@ internal class WindowDetector
     }
 
     /// <summary>检测当前前台窗口的远程类型</summary>
-    public RemoteType Detect() => Classify(GetForegroundProcessName());
+    public virtual RemoteType Detect() => Classify(GetForegroundProcessName());
 }
