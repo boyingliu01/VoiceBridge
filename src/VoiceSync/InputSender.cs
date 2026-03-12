@@ -30,4 +30,55 @@ internal static class InputSender
 
         NativeMethods.SendInput(4, inputs, Marshal.SizeOf<NativeMethods.INPUT>());
     }
+
+    /// <summary>
+    /// 激活目标窗口并发送 Ctrl+V。
+    /// 使用 AttachThreadInput 技巧绕过 SetForegroundWindow 限制。
+    /// </summary>
+    public static void SendCtrlVToWindow(IntPtr targetHwnd)
+    {
+        if (targetHwnd == IntPtr.Zero) return;
+        if (!NativeMethods.IsWindow(targetHwnd)) return;
+
+        // 如果窗口最小化，先恢复
+        if (NativeMethods.IsIconic(targetHwnd))
+        {
+            NativeMethods.ShowWindow(targetHwnd, NativeMethods.SW_RESTORE);
+        }
+
+        // 获取当前前台窗口和线程信息
+        var currentForeground = NativeMethods.GetForegroundWindow();
+        var currentThread = NativeMethods.GetCurrentThreadId();
+        NativeMethods.GetWindowThreadProcessId(targetHwnd, out uint targetThreadId);
+        NativeMethods.GetWindowThreadProcessId(currentForeground, out uint foregroundThreadId);
+
+        // 使用 AttachThreadInput 技巧来获得前台窗口切换权限
+        if (targetThreadId != currentThread && foregroundThreadId != currentThread)
+        {
+            NativeMethods.AttachThreadInput(currentThread, foregroundThreadId, true);
+            NativeMethods.AttachThreadInput(currentThread, targetThreadId, true);
+        }
+
+        // 按 Alt 键绕过 SetForegroundWindow 限制
+        NativeMethods.keybd_event(NativeMethods.VK_MENU, 0, NativeMethods.KEYEVENTF_EXTENDEDKEY, UIntPtr.Zero);
+
+        // 切换到目标窗口
+        NativeMethods.SetForegroundWindow(targetHwnd);
+
+        // 释放 Alt 键
+        NativeMethods.keybd_event(NativeMethods.VK_MENU, 0, NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
+
+        // 分离线程输入
+        if (targetThreadId != currentThread && foregroundThreadId != currentThread)
+        {
+            NativeMethods.AttachThreadInput(currentThread, foregroundThreadId, false);
+            NativeMethods.AttachThreadInput(currentThread, targetThreadId, false);
+        }
+
+        // 短暂等待窗口激活
+        System.Threading.Thread.Sleep(50);
+
+        // 发送 Ctrl+V
+        SendCtrlV();
+    }
 }

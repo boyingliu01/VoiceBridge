@@ -74,4 +74,38 @@ internal static class NativeMethods
     public const uint KEYEVENTF_KEYUP = 0x0002;
     public const ushort VK_CONTROL = 0x11;
     public const ushort VK_V = 0x56;
+
+    // ── 窗口激活 ─────────────────────────────────────────────────
+    [DllImport("user32.dll")]
+    public static extern bool SetForegroundWindow(IntPtr hwnd);
+
+    [DllImport("user32.dll")]
+    public static extern bool ShowWindow(IntPtr hwnd, int nCmdShow);
+
+    public const int SW_RESTORE = 9;
+
+    [DllImport("user32.dll")]
+    public static extern bool IsWindow(IntPtr hwnd);
+
+    [DllImport("user32.dll")]
+    public static extern bool IsIconic(IntPtr hwnd);  // minimized
+
+    [DllImport("user32.dll")]
+    public static extern bool IsWindowVisible(IntPtr hwnd);
+
+    [DllImport("user32.dll")]
+    public static extern uint GetCurrentThreadId();
+
+    [DllImport("user32.dll")]
+    public static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+
+    [DllImport("user32.dll")]
+    public static extern bool AllowSetForegroundWindow(uint dwProcessId);
+
+    // For simulating Alt key to bypass SetForegroundWindow restriction
+    [DllImport("user32.dll")]
+    public static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
+
+    public const byte VK_MENU = 0x12;  // Alt key
+    public const uint KEYEVENTF_EXTENDEDKEY = 0x0001;
 }

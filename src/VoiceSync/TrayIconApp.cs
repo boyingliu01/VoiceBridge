@@ -12,6 +12,7 @@ internal sealed class TrayIconApp : ApplicationContext
     private readonly NotifyIcon _tray;
     private readonly ClipboardWatcher _watcher;
     private readonly SyncEngine _engine;
+    private ToolStripMenuItem? _voiceModeItem;
 
     private const string AutoRunKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
     private const string AutoRunName = "VoiceSync";
@@ -39,6 +40,10 @@ internal sealed class TrayIconApp : ApplicationContext
     {
         var menu = new ContextMenuStrip();
 
+        // 语音模式菜单项
+        _voiceModeItem = new ToolStripMenuItem("语音模式");
+        _voiceModeItem.Click += OnVoiceModeClick;
+
         var toggleItem = new ToolStripMenuItem("暂停同步");
         toggleItem.Click += (_, _) =>
         {
@@ -59,8 +64,40 @@ internal sealed class TrayIconApp : ApplicationContext
         var exitItem = new ToolStripMenuItem("退出");
         exitItem.Click += (_, _) => ExitThread();
 
-        menu.Items.AddRange([toggleItem, autoRunItem, new ToolStripSeparator(), exitItem]);
+        menu.Items.AddRange([_voiceModeItem, toggleItem, autoRunItem, new ToolStripSeparator(), exitItem]);
         return menu;
+    }
+
+    private void OnVoiceModeClick(object? sender, EventArgs e)
+    {
+        if (_engine.VoiceModeEnabled)
+        {
+            // 关闭语音模式
+            _engine.StopVoiceMode();
+            _voiceModeItem!.Checked = false;
+            UpdateTrayIcon();
+            return;
+        }
+
+        // 检测当前前台窗口是否是远程窗口
+        var detector = new WindowDetector();
+        var remoteType = detector.Detect();
+
+        if (remoteType == RemoteType.None)
+        {
+            MessageBox.Show(
+                "请先将焦点切换到远程桌面窗口（RDP 或向日葵），\n然后再开启语音模式。",
+                "VoiceSync",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+            return;
+        }
+
+        // 记录当前远程窗口
+        var hwnd = detector.GetForegroundWindowHandle();
+        _engine.StartVoiceMode(hwnd, remoteType, InputSender.SendCtrlVToWindow);
+        _voiceModeItem!.Checked = true;
+        UpdateTrayIcon();
     }
 
     private static Icon LoadTrayIcon()
@@ -72,9 +109,18 @@ internal sealed class TrayIconApp : ApplicationContext
 
     private void UpdateTrayIcon()
     {
-        _tray.Text = _engine.IsEnabled
-            ? "VoiceSync ● 运行中"
-            : "VoiceSync ○ 已暂停";
+        if (_engine.VoiceModeEnabled)
+        {
+            _tray.Text = "VoiceSync 🎤 语音模式";
+        }
+        else if (_engine.IsEnabled)
+        {
+            _tray.Text = "VoiceSync ● 运行中";
+        }
+        else
+        {
+            _tray.Text = "VoiceSync ○ 已暂停";
+        }
     }
 
     private async void OnClipboardChanged(object? sender, EventArgs e)

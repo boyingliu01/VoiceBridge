@@ -60,4 +60,7 @@ internal class WindowDetector
 
     /// <summary>检测当前前台窗口的远程类型</summary>
     public virtual RemoteType Detect() => Classify(GetForegroundProcessName());
+
+    /// <summary>获取当前前台窗口句柄</summary>
+    public virtual IntPtr GetForegroundWindowHandle() => NativeMethods.GetForegroundWindow();
 }
