@@ -56,7 +56,7 @@ dotnet publish src/VoiceSync -c Release -o publish/
 | 软件 | 进程名 | 延迟设置 |
 |------|--------|----------|
 | RDP (mstsc) | `mstsc` | 150ms |
-| 向日葵远程控制 | `SunloginClient` / `Sunlogin` | 900ms |
+| 向日葵远程控制 | `AweSun` / `SunloginClient` / `Sunlogin` | 900ms |
 | RustDesk | `RustDesk` | 900ms |
 
 ## 向日葵配置说明

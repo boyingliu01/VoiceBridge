@@ -10,10 +10,11 @@ internal class WindowDetector
     // 向日葵各版本可能的进程名（不含 .exe）
     private static readonly string[] SunflowerNames =
     [
-        "SunloginClient",
-        "Sunlogin",
-        "向日葵远程控制",
-        "RustDesk",        // 备用：开源替代品
+        "AweSun",           // 向日葵远程控制主窗口（用户确认）
+        "SunloginClient",   // 旧版本
+        "Sunlogin",         // 旧版本
+        "向日葵远程控制",    // 中文版本
+        "RustDesk",         // 备用：开源替代品
     ];
 
     /// <summary>根据进程名判断远程类型（纯函数，便于单元测试）</summary>

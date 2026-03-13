@@ -9,6 +9,8 @@ public class WindowDetectorTests
     [Theory]
     [InlineData("mstsc", RemoteType.Rdp)]
     [InlineData("MSTSC", RemoteType.Rdp)]           // 大小写不敏感
+    [InlineData("AweSun", RemoteType.Sunflower)]    // 向日葵主窗口（用户确认）
+    [InlineData("awesun", RemoteType.Sunflower)]    // 大小写不敏感
     [InlineData("SunloginClient", RemoteType.Sunflower)]
     [InlineData("Sunlogin", RemoteType.Sunflower)]
     [InlineData("notepad", RemoteType.None)]
