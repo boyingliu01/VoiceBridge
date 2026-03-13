@@ -38,6 +38,12 @@ internal class WindowDetector
         var hwnd = NativeMethods.GetForegroundWindow();
         if (hwnd == IntPtr.Zero) return null;
 
+        return GetProcessNameByHwnd(hwnd);
+    }
+
+    /// <summary>根据窗口句柄获取进程名（不含 .exe 后缀）</summary>
+    private static string? GetProcessNameByHwnd(IntPtr hwnd)
+    {
         NativeMethods.GetWindowThreadProcessId(hwnd, out uint pid);
         if (pid == 0) return null;
 
@@ -82,29 +88,9 @@ internal class WindowDetector
         var hwnd = NativeMethods.GetForegroundWindow();
         if (hwnd == IntPtr.Zero) return (IntPtr.Zero, null, string.Empty);
 
-        NativeMethods.GetWindowThreadProcessId(hwnd, out uint pid);
-        string? processName = null;
-
-        if (pid != 0)
-        {
-            var hProc = NativeMethods.OpenProcess(NativeMethods.PROCESS_QUERY_LIMITED_INFORMATION, false, pid);
-            if (hProc != IntPtr.Zero)
-            {
-                try
-                {
-                    var sb = new StringBuilder(512);
-                    uint size = (uint)sb.Capacity;
-                    if (NativeMethods.QueryFullProcessImageName(hProc, 0, sb, ref size))
-                        processName = Path.GetFileNameWithoutExtension(sb.ToString());
-                }
-                finally
-                {
-                    NativeMethods.CloseHandle(hProc);
-                }
-            }
-        }
-
+        var processName = GetProcessNameByHwnd(hwnd);
         var title = GetWindowTitle(hwnd);
+
         return (hwnd, processName, title);
     }
 }

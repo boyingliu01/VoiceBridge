@@ -76,11 +76,23 @@ internal sealed class TrayIconApp : ApplicationContext
             _engine.StopVoiceMode();
             _voiceModeItem!.Checked = false;
             UpdateTrayIcon();
+            _tray.ShowBalloonTip(2000, "语音模式", "已关闭", ToolTipIcon.Info);
             return;
         }
 
-        // 延迟检测前台窗口（等待菜单关闭）
-        var timer = new System.Windows.Forms.Timer { Interval = 300 };
+        // 显示倒计时提示，让用户有时间切换到目标窗口
+        // 使用 MessageBox 确保用户能看到提示
+        var result = MessageBox.Show(
+            "点击确定后，请在 5 秒内切换到目标窗口（如向日葵远程窗口）。\n\n" +
+            "时间到后会自动捕获当前窗口。",
+            "开启语音模式",
+            MessageBoxButtons.OKCancel,
+            MessageBoxIcon.Information);
+
+        if (result != DialogResult.OK) return;
+
+        // 5秒后检测前台窗口
+        var timer = new System.Windows.Forms.Timer { Interval = 5000 };
         timer.Tick += (_, _) =>
         {
             timer.Dispose();
@@ -113,15 +125,21 @@ internal sealed class TrayIconApp : ApplicationContext
 
         // 显示确认信息
         var displayInfo = string.IsNullOrEmpty(title) ? processName ?? "未知窗口" : title;
-        var remoteInfo = remoteType switch
+
+        string modeInfo = remoteType switch
         {
-            RemoteType.Rdp => "RDP 远程桌面",
-            RemoteType.Sunflower => "向日葵远程",
-            _ => "本地窗口"
+            RemoteType.Rdp => "RDP 远程桌面（延迟 150ms）",
+            RemoteType.Sunflower => "向日葵远程（延迟 900ms）",
+            _ => "本地窗口（延迟 900ms）"
         };
 
-        _tray.ShowBalloonTip(3000, "语音模式已开启",
-            $"目标窗口: {displayInfo}\n类型: {remoteInfo}", ToolTipIcon.Info);
+        // 使用 MessageBox 确保用户能看到确认
+        MessageBox.Show(
+            $"目标窗口: {displayInfo}\n进程: {processName ?? "未知"}\n{modeInfo}\n\n" +
+            "现在你可以切换到本地窗口使用语音输入了。",
+            "语音模式已开启",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Information);
     }
 
     private static Icon LoadTrayIcon()
@@ -164,7 +182,13 @@ internal sealed class TrayIconApp : ApplicationContext
 
     private static bool ToggleAutoRun()
     {
-        using var key = Registry.CurrentUser.OpenSubKey(AutoRunKey, true)!;
+        using var key = Registry.CurrentUser.OpenSubKey(AutoRunKey, true);
+        if (key is null)
+        {
+            // 无法打开注册表键，操作失败
+            return false;
+        }
+
         if (key.GetValue(AutoRunName) is not null)
         {
             key.DeleteValue(AutoRunName);
@@ -181,6 +205,9 @@ internal sealed class TrayIconApp : ApplicationContext
     {
         if (disposing)
         {
+            // 清理键盘状态，防止修饰键卡住
+            InputSender.ResetKeyboardState();
+
             _watcher.Changed -= OnClipboardChanged;
             _watcher.Dispose();
             _tray.Dispose();

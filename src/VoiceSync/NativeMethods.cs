@@ -72,8 +72,10 @@ internal static class NativeMethods
     }
 
     public const uint KEYEVENTF_KEYUP = 0x0002;
-    public const ushort VK_CONTROL = 0x11;
-    public const ushort VK_V = 0x56;
+    public const uint INPUT_KEYBOARD = 1;  // KEYBOARDINPUT type
+
+    public const byte VK_CONTROL = 0x11;  // Ctrl key
+    public const byte VK_V = 0x56;        // V key
 
     // ── 窗口激活 ─────────────────────────────────────────────────
     [DllImport("user32.dll")]
@@ -93,7 +95,7 @@ internal static class NativeMethods
     [DllImport("user32.dll")]
     public static extern bool IsWindowVisible(IntPtr hwnd);
 
-    [DllImport("user32.dll")]
+    [DllImport("kernel32.dll")]
     public static extern uint GetCurrentThreadId();
 
     [DllImport("user32.dll")]
@@ -107,6 +109,7 @@ internal static class NativeMethods
     public static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
 
     public const byte VK_MENU = 0x12;  // Alt key
+    public const byte VK_SHIFT = 0x10; // Shift key
     public const uint KEYEVENTF_EXTENDEDKEY = 0x0001;
 
     // ── 窗口信息 ─────────────────────────────────────────────────

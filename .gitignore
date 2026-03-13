@@ -8,3 +8,8 @@ obj/
 publish/
 publish_new/
 nul_to_delete
+
+# Test results
+TestResults/
+coverage-report/
+*.cobertura.xml
