@@ -79,25 +79,49 @@ internal sealed class TrayIconApp : ApplicationContext
             return;
         }
 
-        // 检测当前前台窗口是否是远程窗口
-        var detector = new WindowDetector();
-        var remoteType = detector.Detect();
+        // 延迟检测前台窗口（等待菜单关闭）
+        var timer = new System.Windows.Forms.Timer { Interval = 300 };
+        timer.Tick += (_, _) =>
+        {
+            timer.Dispose();
+            StartVoiceModeWithConfirmation();
+        };
+        timer.Start();
+    }
 
-        if (remoteType == RemoteType.None)
+    private void StartVoiceModeWithConfirmation()
+    {
+        var (hwnd, processName, title) = WindowDetector.GetForegroundWindowInfo();
+
+        if (hwnd == IntPtr.Zero)
         {
             MessageBox.Show(
-                "请先将焦点切换到远程桌面窗口（RDP 或向日葵），\n然后再开启语音模式。",
+                "无法获取当前前台窗口，请重试。",
                 "VoiceSync",
                 MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
+                MessageBoxIcon.Warning);
             return;
         }
 
-        // 记录当前远程窗口
-        var hwnd = detector.GetForegroundWindowHandle();
+        // 确定远程类型（用于选择延迟时间）
+        var remoteType = WindowDetector.Classify(processName);
+
+        // 开启语音模式
         _engine.StartVoiceMode(hwnd, remoteType, InputSender.SendCtrlVToWindow);
         _voiceModeItem!.Checked = true;
         UpdateTrayIcon();
+
+        // 显示确认信息
+        var displayInfo = string.IsNullOrEmpty(title) ? processName ?? "未知窗口" : title;
+        var remoteInfo = remoteType switch
+        {
+            RemoteType.Rdp => "RDP 远程桌面",
+            RemoteType.Sunflower => "向日葵远程",
+            _ => "本地窗口"
+        };
+
+        _tray.ShowBalloonTip(3000, "语音模式已开启",
+            $"目标窗口: {displayInfo}\n类型: {remoteInfo}", ToolTipIcon.Info);
     }
 
     private static Icon LoadTrayIcon()
