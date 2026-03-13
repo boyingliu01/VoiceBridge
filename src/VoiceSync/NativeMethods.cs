@@ -108,4 +108,11 @@ internal static class NativeMethods
 
     public const byte VK_MENU = 0x12;  // Alt key
     public const uint KEYEVENTF_EXTENDEDKEY = 0x0001;
+
+    // ── 窗口信息 ─────────────────────────────────────────────────
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    public static extern int GetWindowText(IntPtr hWnd, System.Text.StringBuilder lpString, int nMaxCount);
+
+    [DllImport("user32.dll")]
+    public static extern int GetWindowTextLength(IntPtr hWnd);
 }
