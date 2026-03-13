@@ -6,3 +6,5 @@ obj/
 *.userosscache
 *.sln.docstates
 publish/*.exe
+publish/*.pdb
+nul_to_delete
