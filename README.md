@@ -1,7 +1,7 @@
-# VoiceSync
+# VoiceBridge
 
 <p align="center">
-  <strong>远程桌面语音输入助手</strong><br>
+  <strong>跨机语音输入，vibe coding 更轻松</strong><br>
   <sub>让语音输入跨越本地与远程桌面的边界</sub>
 </p>
 
@@ -17,8 +17,8 @@
 - 你按下语音输入快捷键（如微信输入法的 Ctrl+Win）
 - **问题来了**：快捷键被发送到了远程电脑 B，而不是触发本地电脑 A 的语音输入
 
-**VoiceSync 的解决方案**：
-1. 在电脑 A 运行 VoiceSync
+**VoiceBridge 的解决方案**：
+1. 在电脑 A 运行 VoiceBridge
 2. 开启"语音模式"，锁定远程窗口
 3. 切回本地任意窗口，使用语音输入
 4. 语音识别结果自动同步到远程电脑 B
@@ -29,14 +29,14 @@
 
 ### 1. 下载安装
 
-从 [Releases](../../releases) 页面下载 `VoiceSync.exe`，双击运行即可。
+从 [Releases](../../releases) 页面下载 `VoiceBridge.exe`，双击运行即可。
 
 > 无需安装 .NET Runtime，程序已打包为独立可执行文件。
 
 ### 2. 基础使用（正常模式）
 
 ```
-运行 VoiceSync → 在本地复制文字 → 切换到远程窗口 → 自动粘贴
+运行 VoiceBridge → 在本地复制文字 → 切换到远程窗口 → 自动粘贴
 ```
 
 适合场景：手动复制文本，需要粘贴到远程桌面。
@@ -91,9 +91,9 @@
 | **退出** | 关闭程序 |
 
 **托盘图标状态**：
-- `VoiceSync ● 运行中` - 正常工作
-- `VoiceSync 🎤 语音模式` - 语音模式已开启
-- `VoiceSync ○ 已暂停` - 同步已暂停
+- `VoiceBridge ● 运行中` - 正常工作
+- `VoiceBridge 🎤 语音模式` - 语音模式已开启
+- `VoiceBridge ○ 已暂停` - 同步已暂停
 
 ---
 
@@ -155,7 +155,7 @@ dotnet build
 dotnet test
 
 # 发布独立 exe（约 150MB）
-dotnet publish src/VoiceSync -c Release -o publish/ --self-contained true -r win-x64
+dotnet publish src/VoiceBridge -c Release -o publish/ --self-contained true -r win-x64
 ```
 
 ---
@@ -194,20 +194,20 @@ dotnet publish src/VoiceSync -c Release -o publish/ --self-contained true -r win
 ## 项目结构
 
 ```
-VoiceSync/
-├── src/VoiceSync/           # 主程序
-│   ├── Program.cs           # 入口点，单实例检查
-│   ├── TrayIconApp.cs       # 托盘图标应用
-│   ├── ClipboardWatcher.cs  # 剪贴板监听
-│   ├── WindowDetector.cs    # 远程窗口检测
-│   ├── SyncEngine.cs        # 核心逻辑
-│   ├── InputSender.cs       # 键盘输入
-│   └── NativeMethods.cs     # P/Invoke 声明
-├── tests/VoiceSync.Tests/   # 单元测试
-├── tools/GenerateIcon/      # 图标生成工具
-├── publish/                 # 发布输出
+VoiceBridge/
+├── src/VoiceBridge/          # 主程序
+│   ├── Program.cs            # 入口点，单实例检查
+│   ├── TrayIconApp.cs        # 托盘图标应用
+│   ├── ClipboardWatcher.cs   # 剪贴板监听
+│   ├── WindowDetector.cs     # 远程窗口检测
+│   ├── SyncEngine.cs         # 核心逻辑
+│   ├── InputSender.cs        # 键盘输入
+│   └── NativeMethods.cs      # P/Invoke 声明
+├── tests/VoiceBridge.Tests/  # 单元测试
+├── tools/GenerateIcon/       # 图标生成工具
+├── publish/                  # 发布输出
 └── docs/
-    └── QA_REPORT.md         # 质量保证报告
+    └── QA_REPORT.md          # 质量保证报告
 ```
 
 ---
@@ -224,8 +224,8 @@ MIT License
 
 ### 开发环境设置
 ```bash
-git clone https://github.com/your-username/VoiceSync.git
-cd VoiceSync
+git clone https://github.com/your-username/VoiceBridge.git
+cd VoiceBridge
 dotnet restore
 dotnet test
 ```

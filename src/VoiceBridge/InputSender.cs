@@ -1,7 +1,7 @@
 // src/VoiceSync/InputSender.cs
 using System.Runtime.InteropServices;
 
-namespace VoiceSync;
+namespace VoiceBridge;
 
 /// <summary>通过 Win32 SendInput 向当前前台窗口注入 Ctrl+V 键盘事件</summary>
 internal static class InputSender

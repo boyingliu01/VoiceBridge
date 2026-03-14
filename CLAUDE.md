@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-VoiceSync is a Windows system tray application (.NET 8, WinForms) that monitors clipboard changes and automatically pastes text into active remote desktop windows (RDP via `mstsc`, or Sunflower/向日葵 remote control). Use case: voice input typed locally auto-syncs to remote machines.
+VoiceBridge is a Windows system tray application (.NET 8, WinForms) that monitors clipboard changes and automatically pastes text into active remote desktop windows (RDP via `mstsc`, or Sunflower/向日葵 remote control). Use case: voice input typed locally auto-syncs to remote machines.
+
+**Slogan**: 跨机语音输入，vibe coding 更轻松
 
 ## Commands
 
@@ -28,13 +30,13 @@ dotnet test --filter "ClassName=WindowDetectorTests"
 dotnet test --filter "FullyQualifiedName~OnClipboardChanged_Rdp_PastesText"
 
 # Run application
-dotnet run --project src/VoiceSync
+dotnet run --project src/VoiceBridge
 
 # Publish self-contained single .exe
-dotnet publish src/VoiceSync -c Release -o publish/
+dotnet publish src/VoiceBridge -c Release -o publish/
 
 # Create GitHub release
-gh release create v1.0 publish/VoiceSync.exe --title "v1.0" --notes "..."
+gh release create v1.0 publish/VoiceBridge.exe --title "v1.0" --notes "..."
 ```
 
 ## Architecture
@@ -63,7 +65,7 @@ Solves the "focus hijacking" problem when using voice input with remote desktop:
 3. User switches to remote window within 5 seconds
 4. System captures the remote window handle
 5. User switches to any local window, uses voice input
-6. Clipboard changes → VoiceSync activates remote window → Ctrl+V
+6. Clipboard changes → VoiceBridge activates remote window → Ctrl+V
 
 **Window activation technique:**
 - `AttachThreadInput` + `SetForegroundWindow` for reliable switching
@@ -77,11 +79,11 @@ Solves the "focus hijacking" problem when using voice input with remote desktop:
 
 ## Testing
 
-Tests use xUnit + Moq in `tests/VoiceSync.Tests/`.
+Tests use xUnit + Moq in `tests/VoiceBridge.Tests/`.
 
 **Testability setup:**
 - `WindowDetector.Detect()` is `virtual` for mocking
-- `InternalsVisibleTo` for `VoiceSync.Tests` and `DynamicProxyGenAssembly2` (Moq)
+- `InternalsVisibleTo` for `VoiceBridge.Tests` and `DynamicProxyGenAssembly2` (Moq)
 - Set `RdpDelayMs = 0` / `SunflowerDelayMs = 0` to avoid delays in tests
 
 **Coverage (v1.0):**
@@ -91,7 +93,7 @@ Tests use xUnit + Moq in `tests/VoiceSync.Tests/`.
 
 ## C# Conventions
 
-- File-scope namespaces with path comment: `// src/VoiceSync/ClassName.cs`
+- File-scope namespaces with path comment: `// src/VoiceBridge/ClassName.cs`
 - Primary constructors for DI: `class SyncEngine(WindowDetector detector, Action<string> pasteAction)`
 - Private fields: `_camelCase`. Properties/methods/types: `PascalCase`
 - `StringComparison.OrdinalIgnoreCase` over `.ToLower()`

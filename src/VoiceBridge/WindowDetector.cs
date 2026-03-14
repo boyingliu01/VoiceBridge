@@ -1,7 +1,7 @@
 // src/VoiceSync/WindowDetector.cs
 using System.Text;
 
-namespace VoiceSync;
+namespace VoiceBridge;
 
 public enum RemoteType { None, Rdp, Sunflower }
 

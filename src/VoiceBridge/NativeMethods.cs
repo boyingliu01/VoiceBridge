@@ -1,7 +1,7 @@
 // src/VoiceSync/NativeMethods.cs
 using System.Runtime.InteropServices;
 
-namespace VoiceSync;
+namespace VoiceBridge;
 
 internal static class NativeMethods
 {

@@ -2,7 +2,7 @@
 using System.Windows.Forms;
 using Microsoft.Win32;
 
-namespace VoiceSync;
+namespace VoiceBridge;
 
 /// <summary>
 /// WinForms ApplicationContext：管理托盘图标、消息循环、组件生命周期。
@@ -15,7 +15,7 @@ internal sealed class TrayIconApp : ApplicationContext
     private ToolStripMenuItem? _voiceModeItem;
 
     private const string AutoRunKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
-    private const string AutoRunName = "VoiceSync";
+    private const string AutoRunName = "VoiceBridge";
 
     public TrayIconApp()
     {
@@ -27,7 +27,7 @@ internal sealed class TrayIconApp : ApplicationContext
 
         _tray = new NotifyIcon
         {
-            Text = "VoiceSync — 语音远程同步",
+            Text = "VoiceBridge — 跨机语音输入",
             Icon = LoadTrayIcon(),
             Visible = true,
             ContextMenuStrip = BuildMenu()
@@ -109,7 +109,7 @@ internal sealed class TrayIconApp : ApplicationContext
         {
             MessageBox.Show(
                 "无法获取当前前台窗口，请重试。",
-                "VoiceSync",
+                "VoiceBridge",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Warning);
             return;
@@ -145,7 +145,7 @@ internal sealed class TrayIconApp : ApplicationContext
     private static Icon LoadTrayIcon()
     {
         var asm = typeof(TrayIconApp).Assembly;
-        using var stream = asm.GetManifestResourceStream("VoiceSync.tray.ico");
+        using var stream = asm.GetManifestResourceStream("VoiceBridge.tray.ico");
         return stream is not null ? new Icon(stream) : SystemIcons.Application;
     }
 
@@ -153,15 +153,15 @@ internal sealed class TrayIconApp : ApplicationContext
     {
         if (_engine.VoiceModeEnabled)
         {
-            _tray.Text = "VoiceSync 🎤 语音模式";
+            _tray.Text = "VoiceBridge 🎤 语音模式";
         }
         else if (_engine.IsEnabled)
         {
-            _tray.Text = "VoiceSync ● 运行中";
+            _tray.Text = "VoiceBridge ● 运行中";
         }
         else
         {
-            _tray.Text = "VoiceSync ○ 已暂停";
+            _tray.Text = "VoiceBridge ○ 已暂停";
         }
     }
 

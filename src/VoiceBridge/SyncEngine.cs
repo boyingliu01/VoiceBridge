@@ -1,5 +1,5 @@
 // src/VoiceSync/SyncEngine.cs
-namespace VoiceSync;
+namespace VoiceBridge;
 
 /// <summary>
 /// 核心逻辑：剪贴板变化 → 检测远程类型 → 延迟 → 触发粘贴。

@@ -1,7 +1,7 @@
 // src/VoiceSync/ClipboardWatcher.cs
 using System.Windows.Forms;
 
-namespace VoiceSync;
+namespace VoiceBridge;
 
 /// <summary>
 /// 注册为 Windows 剪贴板监听器，剪贴板内容变化时触发 Changed 事件。

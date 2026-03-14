@@ -1,7 +1,7 @@
 // src/VoiceSync/Program.cs
 using System.Windows.Forms;
 
-namespace VoiceSync;
+namespace VoiceBridge;
 
 static class Program
 {
@@ -9,11 +9,11 @@ static class Program
     static void Main()
     {
         // 确保只有一个实例运行
-        using var mutex = new Mutex(true, "VoiceSync_SingleInstance", out bool isNew);
+        using var mutex = new Mutex(true, "VoiceBridge_SingleInstance", out bool isNew);
         if (!isNew)
         {
-            MessageBox.Show("VoiceSync 已在运行中。\n请查看系统托盘图标。",
-                "VoiceSync", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("VoiceBridge 已在运行中。\n请查看系统托盘图标。",
+                "VoiceBridge", MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
         }
 

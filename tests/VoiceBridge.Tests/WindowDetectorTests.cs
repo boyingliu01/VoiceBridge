@@ -1,8 +1,8 @@
 // tests/VoiceSync.Tests/WindowDetectorTests.cs
-using VoiceSync;
+using VoiceBridge;
 using Xunit;
 
-namespace VoiceSync.Tests;
+namespace VoiceBridge.Tests;
 
 public class WindowDetectorTests
 {
