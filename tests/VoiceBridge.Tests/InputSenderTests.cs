@@ -1,8 +1,8 @@
 // tests/VoiceSync.Tests/InputSenderTests.cs
-using VoiceSync;
+using VoiceBridge;
 using Xunit;
 
-namespace VoiceSync.Tests;
+namespace VoiceBridge.Tests;
 
 /// <summary>
 /// InputSender 的测试。

@@ -1,7 +1,7 @@
-# VoiceSync 质量保证报告
+# VoiceBridge 质量保证报告
 
 **生成时间**: 2026-03-13 23:57
-**版本**: VoiceSync v1.0
+**版本**: VoiceBridge v1.0
 **负责人**: Claude Code
 
 ---
@@ -198,7 +198,7 @@ dotnet test
 
 | 文件 | 路径 |
 |------|------|
-| 可执行文件 | `publish/VoiceSync.exe` |
+| 可执行文件 | `publish/VoiceBridge.exe` |
 | 测试报告 | 本文档 |
 | 覆盖率报告 | `coverage-report/` |
 

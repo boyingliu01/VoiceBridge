@@ -23,6 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\VoiceSync\VoiceSync.csproj" />
+    <ProjectReference Include="..\..\src\VoiceBridge\VoiceBridge.csproj" />
   </ItemGroup>
 </Project>

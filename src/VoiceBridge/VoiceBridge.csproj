@@ -6,8 +6,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
-    <AssemblyName>VoiceSync</AssemblyName>
-    <RootNamespace>VoiceSync</RootNamespace>
+    <AssemblyName>VoiceBridge</AssemblyName>
+    <RootNamespace>VoiceBridge</RootNamespace>
     <!-- 发布配置：单文件自包含 .exe -->
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
@@ -21,7 +21,7 @@
   </ItemGroup>
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>VoiceSync.Tests</_Parameter1>
+      <_Parameter1>VoiceBridge.Tests</_Parameter1>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>DynamicProxyGenAssembly2</_Parameter1>
