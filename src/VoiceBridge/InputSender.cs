@@ -32,12 +32,16 @@ internal static class InputSender
     }
 
     /// <summary>
-    /// 清理所有可能卡住的修饰键状态（Ctrl、Alt、Shift）。
+    /// 清理所有可能卡住的修饰键状态（Ctrl、Alt、Shift、Win）。
     /// 在程序退出时调用，防止键盘状态异常。
     /// </summary>
     public static void ResetKeyboardState()
     {
         // 释放所有修饰键（使用 keybd_event 因为它可以可靠地清除状态）
+        NativeMethods.keybd_event(NativeMethods.VK_LWIN, 0,
+            NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
+        NativeMethods.keybd_event(NativeMethods.VK_RWIN, 0,
+            NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
         NativeMethods.keybd_event(NativeMethods.VK_CONTROL, 0,
             NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
         NativeMethods.keybd_event(NativeMethods.VK_MENU, 0,
@@ -48,7 +52,7 @@ internal static class InputSender
 
     /// <summary>
     /// 激活目标窗口并发送 Ctrl+V。
-    /// 使用 AttachThreadInput 技巧绕过 SetForegroundWindow 限制。
+    /// 不使用 Alt 键模拟，改用 ShowWindow + SetForegroundWindow。
     /// </summary>
     public static void SendCtrlVToWindow(IntPtr targetHwnd)
     {
@@ -62,6 +66,18 @@ internal static class InputSender
             {
                 NativeMethods.ShowWindow(targetHwnd, NativeMethods.SW_RESTORE);
             }
+
+            // 先确保所有修饰键都已释放，避免意外组合键
+            NativeMethods.keybd_event(NativeMethods.VK_CONTROL, 0,
+                NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
+            NativeMethods.keybd_event(NativeMethods.VK_MENU, 0,
+                NativeMethods.KEYEVENTF_EXTENDEDKEY | NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
+            NativeMethods.keybd_event(NativeMethods.VK_SHIFT, 0,
+                NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
+            NativeMethods.keybd_event(NativeMethods.VK_LWIN, 0,
+                NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
+            NativeMethods.keybd_event(NativeMethods.VK_RWIN, 0,
+                NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
 
             // 获取当前前台窗口和线程信息
             var currentForeground = NativeMethods.GetForegroundWindow();
@@ -80,26 +96,10 @@ internal static class InputSender
 
             try
             {
-                // 先确保所有修饰键都已释放，避免意外组合键
-                NativeMethods.keybd_event(NativeMethods.VK_MENU, 0,
-                    NativeMethods.KEYEVENTF_EXTENDEDKEY | NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
-                NativeMethods.keybd_event(NativeMethods.VK_CONTROL, 0,
-                    NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
-                NativeMethods.keybd_event(NativeMethods.VK_SHIFT, 0,
-                    NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
-
-                // 短暂等待键盘状态稳定
-                System.Threading.Thread.Sleep(10);
-
-                // 按 Alt 键绕过 SetForegroundWindow 限制
-                NativeMethods.keybd_event(NativeMethods.VK_MENU, 0, NativeMethods.KEYEVENTF_EXTENDEDKEY, UIntPtr.Zero);
-
-                // 切换到目标窗口
+                // 方法：先 ShowWindow 再 SetForegroundWindow（不使用 Alt 键模拟）
+                NativeMethods.ShowWindow(targetHwnd, NativeMethods.SW_SHOW);
                 NativeMethods.SetForegroundWindow(targetHwnd);
-
-                // 立即释放 Alt 键（必须同时包含 EXTENDEDKEY 和 KEYUP 标志！）
-                NativeMethods.keybd_event(NativeMethods.VK_MENU, 0,
-                    NativeMethods.KEYEVENTF_EXTENDEDKEY | NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
+                NativeMethods.SetFocus(targetHwnd);
             }
             finally
             {
@@ -114,16 +114,40 @@ internal static class InputSender
             // 等待窗口激活
             System.Threading.Thread.Sleep(100);
 
+            // 验证窗口是否已激活
+            var activated = NativeMethods.GetForegroundWindow();
+            if (activated != targetHwnd)
+            {
+                // 如果 SetForegroundWindow 失败，尝试强制方式
+                ForceActivateWindow(targetHwnd);
+            }
+
+            // 再次确保修饰键已释放
+            NativeMethods.keybd_event(NativeMethods.VK_CONTROL, 0,
+                NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
+
             // 发送 Ctrl+V
             SendCtrlV();
         }
         finally
         {
             // 安全清理：确保所有修饰键都被释放
-            NativeMethods.keybd_event(NativeMethods.VK_MENU, 0,
-                NativeMethods.KEYEVENTF_EXTENDEDKEY | NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
             NativeMethods.keybd_event(NativeMethods.VK_CONTROL, 0,
                 NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
+            NativeMethods.keybd_event(NativeMethods.VK_MENU, 0,
+                NativeMethods.KEYEVENTF_EXTENDEDKEY | NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
         }
+    }
+
+    /// <summary>
+    /// 强制激活窗口（备用方案，使用最小化/恢复技巧）
+    /// </summary>
+    private static void ForceActivateWindow(IntPtr hwnd)
+    {
+        // 使用最小化再恢复的方式强制激活
+        NativeMethods.ShowWindow(hwnd, NativeMethods.SW_MINIMIZE);
+        System.Threading.Thread.Sleep(50);
+        NativeMethods.ShowWindow(hwnd, NativeMethods.SW_RESTORE);
+        NativeMethods.SetForegroundWindow(hwnd);
     }
 }

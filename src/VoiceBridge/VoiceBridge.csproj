@@ -8,12 +8,11 @@
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <AssemblyName>VoiceBridge</AssemblyName>
     <RootNamespace>VoiceBridge</RootNamespace>
-    <!-- 发布配置：单文件自包含 .exe -->
+    <!-- 发布配置：依赖 .NET Runtime（体积小） -->
     <PublishSingleFile>true</PublishSingleFile>
-    <SelfContained>true</SelfContained>
+    <SelfContained>false</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <PublishReadyToRun>false</PublishReadyToRun>
-    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <ApplicationIcon>tray.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
