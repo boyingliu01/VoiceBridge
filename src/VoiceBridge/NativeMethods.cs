@@ -84,6 +84,11 @@ internal static class NativeMethods
     [DllImport("user32.dll")]
     public static extern bool ShowWindow(IntPtr hwnd, int nCmdShow);
 
+    [DllImport("user32.dll")]
+    public static extern IntPtr SetFocus(IntPtr hwnd);
+
+    public const int SW_SHOW = 5;
+    public const int SW_MINIMIZE = 6;
     public const int SW_RESTORE = 9;
 
     [DllImport("user32.dll")]
@@ -110,6 +115,8 @@ internal static class NativeMethods
 
     public const byte VK_MENU = 0x12;  // Alt key
     public const byte VK_SHIFT = 0x10; // Shift key
+    public const byte VK_LWIN = 0x5B;  // Left Windows key
+    public const byte VK_RWIN = 0x5C;  // Right Windows key
     public const uint KEYEVENTF_EXTENDEDKEY = 0x0001;
 
     // ── 窗口信息 ─────────────────────────────────────────────────
