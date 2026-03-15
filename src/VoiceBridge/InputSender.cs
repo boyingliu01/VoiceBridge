@@ -80,13 +80,24 @@ internal static class InputSender
 
             try
             {
+                // 先确保所有修饰键都已释放，避免意外组合键
+                NativeMethods.keybd_event(NativeMethods.VK_MENU, 0,
+                    NativeMethods.KEYEVENTF_EXTENDEDKEY | NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
+                NativeMethods.keybd_event(NativeMethods.VK_CONTROL, 0,
+                    NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
+                NativeMethods.keybd_event(NativeMethods.VK_SHIFT, 0,
+                    NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
+
+                // 短暂等待键盘状态稳定
+                System.Threading.Thread.Sleep(10);
+
                 // 按 Alt 键绕过 SetForegroundWindow 限制
                 NativeMethods.keybd_event(NativeMethods.VK_MENU, 0, NativeMethods.KEYEVENTF_EXTENDEDKEY, UIntPtr.Zero);
 
                 // 切换到目标窗口
                 NativeMethods.SetForegroundWindow(targetHwnd);
 
-                // 释放 Alt 键（必须同时包含 EXTENDEDKEY 和 KEYUP 标志！）
+                // 立即释放 Alt 键（必须同时包含 EXTENDEDKEY 和 KEYUP 标志！）
                 NativeMethods.keybd_event(NativeMethods.VK_MENU, 0,
                     NativeMethods.KEYEVENTF_EXTENDEDKEY | NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
             }
@@ -100,17 +111,19 @@ internal static class InputSender
                 }
             }
 
-            // 短暂等待窗口激活
-            System.Threading.Thread.Sleep(50);
+            // 等待窗口激活
+            System.Threading.Thread.Sleep(100);
 
             // 发送 Ctrl+V
             SendCtrlV();
         }
         finally
         {
-            // 安全清理：确保 Alt 键被释放
+            // 安全清理：确保所有修饰键都被释放
             NativeMethods.keybd_event(NativeMethods.VK_MENU, 0,
                 NativeMethods.KEYEVENTF_EXTENDEDKEY | NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
+            NativeMethods.keybd_event(NativeMethods.VK_CONTROL, 0,
+                NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
         }
     }
 }
