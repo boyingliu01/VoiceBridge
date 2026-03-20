@@ -1,4 +1,4 @@
-// src/VoiceSync/NativeMethods.cs
+// src/VoiceBridge/NativeMethods.cs
 using System.Runtime.InteropServices;
 
 namespace VoiceBridge;

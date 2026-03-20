@@ -1,4 +1,4 @@
-// src/VoiceSync/TrayIconApp.cs
+// src/VoiceBridge/TrayIconApp.cs
 using System.Windows.Forms;
 using Microsoft.Win32;
 
