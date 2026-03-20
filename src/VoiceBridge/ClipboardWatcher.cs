@@ -1,4 +1,4 @@
-// src/VoiceSync/ClipboardWatcher.cs
+// src/VoiceBridge/ClipboardWatcher.cs
 using System.Windows.Forms;
 
 namespace VoiceBridge;

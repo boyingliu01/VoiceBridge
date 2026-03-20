@@ -1,4 +1,4 @@
-// src/VoiceSync/InputSender.cs
+// src/VoiceBridge/InputSender.cs
 using System.Runtime.InteropServices;
 
 namespace VoiceBridge;
@@ -56,14 +56,25 @@ internal static class InputSender
     /// </summary>
     public static void SendCtrlVToWindow(IntPtr targetHwnd)
     {
-        if (targetHwnd == IntPtr.Zero) return;
-        if (!NativeMethods.IsWindow(targetHwnd)) return;
+        if (targetHwnd == IntPtr.Zero)
+        {
+            System.Diagnostics.Debug.WriteLine("SendCtrlVToWindow: targetHwnd is Zero");
+            return;
+        }
+        if (!NativeMethods.IsWindow(targetHwnd))
+        {
+            System.Diagnostics.Debug.WriteLine("SendCtrlVToWindow: targetHwnd is not a valid window");
+            return;
+        }
 
         try
         {
+            System.Diagnostics.Debug.WriteLine($"SendCtrlVToWindow: Start, targetHwnd={targetHwnd}");
+
             // 如果窗口最小化，先恢复
             if (NativeMethods.IsIconic(targetHwnd))
             {
+                System.Diagnostics.Debug.WriteLine("SendCtrlVToWindow: Window is iconic, restoring...");
                 NativeMethods.ShowWindow(targetHwnd, NativeMethods.SW_RESTORE);
             }
 
@@ -85,10 +96,13 @@ internal static class InputSender
             NativeMethods.GetWindowThreadProcessId(targetHwnd, out uint targetThreadId);
             NativeMethods.GetWindowThreadProcessId(currentForeground, out uint foregroundThreadId);
 
+            System.Diagnostics.Debug.WriteLine($"SendCtrlVToWindow: currentThread={currentThread}, targetThreadId={targetThreadId}, foregroundThreadId={foregroundThreadId}");
+
             // 使用 AttachThreadInput 技巧来获得前台窗口切换权限
             bool attached = false;
             if (targetThreadId != currentThread && foregroundThreadId != currentThread)
             {
+                System.Diagnostics.Debug.WriteLine("SendCtrlVToWindow: Attaching thread input...");
                 NativeMethods.AttachThreadInput(currentThread, foregroundThreadId, true);
                 NativeMethods.AttachThreadInput(currentThread, targetThreadId, true);
                 attached = true;
@@ -97,6 +111,7 @@ internal static class InputSender
             try
             {
                 // 方法：先 ShowWindow 再 SetForegroundWindow（不使用 Alt 键模拟）
+                System.Diagnostics.Debug.WriteLine("SendCtrlVToWindow: Showing and setting foreground...");
                 NativeMethods.ShowWindow(targetHwnd, NativeMethods.SW_SHOW);
                 NativeMethods.SetForegroundWindow(targetHwnd);
                 NativeMethods.SetFocus(targetHwnd);
@@ -106,19 +121,24 @@ internal static class InputSender
                 // 分离线程输入
                 if (attached)
                 {
+                    System.Diagnostics.Debug.WriteLine("SendCtrlVToWindow: Detaching thread input...");
                     NativeMethods.AttachThreadInput(currentThread, foregroundThreadId, false);
                     NativeMethods.AttachThreadInput(currentThread, targetThreadId, false);
                 }
             }
 
             // 等待窗口激活
+            System.Diagnostics.Debug.WriteLine("SendCtrlVToWindow: Waiting 100ms for activation...");
             System.Threading.Thread.Sleep(100);
 
             // 验证窗口是否已激活
             var activated = NativeMethods.GetForegroundWindow();
+            System.Diagnostics.Debug.WriteLine($"SendCtrlVToWindow: Current foreground={activated}, expected={targetHwnd}, match={activated == targetHwnd}");
+
             if (activated != targetHwnd)
             {
                 // 如果 SetForegroundWindow 失败，尝试强制方式
+                System.Diagnostics.Debug.WriteLine("SendCtrlVToWindow: Activation failed, trying force...");
                 ForceActivateWindow(targetHwnd);
             }
 
@@ -126,8 +146,18 @@ internal static class InputSender
             NativeMethods.keybd_event(NativeMethods.VK_CONTROL, 0,
                 NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
 
+            // 刷新剪贴板内容，触发远程软件立即同步
+            System.Diagnostics.Debug.WriteLine("SendCtrlVToWindow: Refreshing clipboard...");
+            RefreshClipboard();
+
+            // 等待剪贴板同步
+            System.Diagnostics.Debug.WriteLine("SendCtrlVToWindow: Waiting 300ms for clipboard sync...");
+            System.Threading.Thread.Sleep(300);
+
             // 发送 Ctrl+V
+            System.Diagnostics.Debug.WriteLine("SendCtrlVToWindow: Sending Ctrl+V...");
             SendCtrlV();
+            System.Diagnostics.Debug.WriteLine("SendCtrlVToWindow: Ctrl+V sent");
         }
         finally
         {
@@ -149,5 +179,38 @@ internal static class InputSender
         System.Threading.Thread.Sleep(50);
         NativeMethods.ShowWindow(hwnd, NativeMethods.SW_RESTORE);
         NativeMethods.SetForegroundWindow(hwnd);
+    }
+
+    /// <summary>
+    /// 刷新剪贴板内容：读取并重新写入，触发远程软件立即同步。
+    /// 解决向日葵/RDP 剪贴板同步延迟问题。
+    /// </summary>
+    private static void RefreshClipboard()
+    {
+        try
+        {
+            System.Diagnostics.Debug.WriteLine("RefreshClipboard: Getting clipboard text...");
+            // 读取当前剪贴板内容
+            var text = System.Windows.Forms.Clipboard.GetText();
+            System.Diagnostics.Debug.WriteLine($"RefreshClipboard: Clipboard text length={text?.Length ?? 0}, content='{text?.Substring(0, Math.Min(50, text?.Length ?? 0))}'");
+            if (string.IsNullOrEmpty(text))
+            {
+                System.Diagnostics.Debug.WriteLine("RefreshClipboard: Clipboard is empty, skipping");
+                return;
+            }
+
+            // 短暂延迟，确保剪贴板操作完成
+            System.Threading.Thread.Sleep(50);
+
+            // 重新写入剪贴板，触发远程软件立即同步
+            System.Diagnostics.Debug.WriteLine("RefreshClipboard: Setting clipboard text to trigger sync...");
+            System.Windows.Forms.Clipboard.SetText(text);
+            System.Diagnostics.Debug.WriteLine("RefreshClipboard: Clipboard refreshed successfully");
+        }
+        catch (Exception ex)
+        {
+            // 剪贴板操作失败时静默处理
+            System.Diagnostics.Debug.WriteLine($"RefreshClipboard: Exception - {ex.Message}");
+        }
     }
 }

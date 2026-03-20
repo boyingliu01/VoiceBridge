@@ -1,4 +1,4 @@
-// src/VoiceSync/WindowDetector.cs
+// src/VoiceBridge/WindowDetector.cs
 using System.Text;
 
 namespace VoiceBridge;

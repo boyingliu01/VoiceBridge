@@ -1,4 +1,4 @@
-// src/VoiceSync/SyncEngine.cs
+// src/VoiceBridge/SyncEngine.cs
 namespace VoiceBridge;
 
 /// <summary>
@@ -10,6 +10,7 @@ internal class SyncEngine(WindowDetector detector, Action<string> pasteAction)
     public bool IsEnabled { get; set; } = true;
     public int RdpDelayMs { get; set; } = 150;
     public int SunflowerDelayMs { get; set; } = 900;
+    public int VoiceModeDelayMs { get; set; } = 500; // 语音模式额外等待时间，确保远程剪贴板同步完成
 
     // ── 语音模式 ─────────────────────────────────────────────────
     public bool VoiceModeEnabled { get; private set; }
@@ -47,8 +48,11 @@ internal class SyncEngine(WindowDetector detector, Action<string> pasteAction)
         // 语音模式：直接粘贴到目标窗口
         if (VoiceModeEnabled && TargetWindowHandle != IntPtr.Zero)
         {
-            var delay = _targetRemoteType == RemoteType.Rdp ? RdpDelayMs : SunflowerDelayMs;
-            if (delay > 0) await Task.Delay(delay);
+            // 远程软件同步剪贴板需要时间，语音输入尤其有延迟
+            var remoteDelay = _targetRemoteType == RemoteType.Rdp ? RdpDelayMs : SunflowerDelayMs;
+            var voiceDelay = VoiceModeDelayMs;
+            var totalDelay = remoteDelay + voiceDelay;
+            if (totalDelay > 0) await Task.Delay(totalDelay);
 
             if (_pasteToWindowAction is not null)
                 _pasteToWindowAction(TargetWindowHandle);
